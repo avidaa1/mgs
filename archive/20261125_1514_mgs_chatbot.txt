@@ -1,0 +1,213 @@
+Archived (removed from the live page) by the chatbot audit 20261125_1514.
+Original file: index.html
+
+/* ===== CODEC AI page (key input + KB chat) (bytes 3522) ===== */
+<div id="page-ai" class="page">
+<div class="wrap">
+<div class="section-header">
+  <div class="section-eyebrow">AI-POWERED // ANTHROPIC API // MGS LORE SPECIALIST</div>
+  <div class="section-title">CODEC AI</div>
+  <div class="section-divider"></div>
+</div>
+<p style="font-family:Share Tech Mono,monospace;font-size:14px;color:var(--text3);margin-bottom:28px;line-height:1.85">Live AI lore assistant. Ask anything about the Metal Gear saga &mdash; characters, events, timelines, factions, weapons, philosophy. CODEC answers with classified-file precision.</p>
+<div class="codec-ai-wrap">
+  <div class="codec-panel">
+    <div style="border:1px solid var(--border);background:#030303;padding:20px;text-align:center">
+      <div class="codec-static"></div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:3px;margin-bottom:12px">CODEC SYSTEM</div>
+      <div style="font-family:'Orbitron',sans-serif;font-size:22px;color:var(--amber);letter-spacing:4px;margin-bottom:4px" id="codec-char-name">MGS INTEL AI</div>
+      <div style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--green)">FREQ: 140.85</div>
+    </div>
+    <div class="ai-status-box">
+      <div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--text3)">SYSTEM STATUS</div>
+      <div class="ai-status-val" id="ai-status" style="font-family:Share Tech Mono,monospace;font-size:12px;color:var(--green)">&#9679; STANDBY</div>
+    </div>
+    <div class="codec-info-box">
+      <div style="color:var(--amber);margin-bottom:8px;font-size:10px;letter-spacing:2px">ANTHROPIC API KEY</div>
+      <input id="api-key-input" class="ai-key-input" type="password" placeholder="sk-ant-..." oninput="localStorage.setItem('avidaa_anthropic_key',this.value.trim())">
+      <div style="font-size:10px;color:#333;margin-top:6px;line-height:1.6">Enter your Anthropic API key. Never stored. <button onclick="clearCodecKey()" style="background:transparent;border:1px solid #444;color:#666;padding:2px 8px;cursor:pointer;font-family:Share Tech Mono,monospace;font-size:10px;margin-top:4px;display:inline-block">FORGET KEY</button></div>
+      <div style="margin-top:14px;color:var(--amber);font-size:10px;letter-spacing:2px">ACCESS LEVEL</div>
+      <div style="margin-top:6px;color:#555;line-height:1.7">All 13 games. Full character database. Timeline 1939 to 2018. Classified operation files loaded.</div>
+    </div>
+  </div>
+  <div class="codec-chat-panel">
+    <div class="codec-chat-header">
+      <div class="codec-chat-title">AVIDAA</div>
+      <div id="ai-badge" class="codec-badge" style="color:var(--green);border-color:var(--green)">KB MODE</div>
+    </div>
+    <div class="codec-messages" id="codec-msgs">
+      <div class="msg ai"><div class="msg-label">AVIDAA</div><div class="msg-bubble">Intelligence archive online. Ask me anything about the Metal Gear saga — characters, operations, factions, weapons, philosophy.<br><br>Enter your Anthropic API key below to upgrade to full AI mode.</div></div>
+    </div>
+    <div class="typing-indicator" id="typing-ind"><div class="typing-dots"><span></span><span></span><span></span></div></div>
+    <div class="codec-input-row">
+      <input class="codec-input" id="codec-input" placeholder="Ask about any character, event, or faction..." onkeydown="if(event.key==='Enter')sendCodec()">
+      <button class="codec-send" id="codec-send-btn" onclick="sendCodec()">TRANSMIT</button>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+<script>
+
+
+/* ===== replaced: nav button ===== */
+<button class="nav-btn" onclick="go('ai')">CODEC AI</button>
+
+
+/* ===== replaced: hero CTA ===== */
+      <button class="cta-btn" onclick="go('ai')">OPEN CODEC AI</button>
+
+
+/* ===== key prefill (bytes 183) ===== */
+// Pre-populate API key from localStorage
+(function(){var k=localStorage.getItem('avidaa_anthropic_key');if(k){var el=document.getElementById('api-key-input');if(el)el.value=k;}})();
+
+
+/* ===== CODEC AI JS (visitor key, api.anthropic.com fetch, SNAKE_KB offline matcher) (bytes 18761) ===== */
+const AI_SYS=`You are CODEC, an AI intelligence system in the Metal Gear universe. You have complete access to all classified files across the entire Metal Gear saga — all 13 games from Metal Gear (1987) through Metal Gear Solid Delta: Snake Eater (2025). You know every character, faction, operation, timeline event, weapon system, and philosophical theme in the saga. Answer with tactical precision and lore accuracy. Keep responses informative but concise — like a codec call. You may use codec-style framing occasionally (codenames, operation references). Stay readable. Never break character.`;
+let aiHistory=[];
+async function sendCodec(){
+  const input=document.getElementById('codec-input');
+  const msg=input.value.trim();
+  if(!msg)return;
+  input.value='';
+  const apiKey=(localStorage.getItem('avidaa_anthropic_key')||'').trim();
+  addMsg('OPERATOR',msg,'user');
+  // No key → use AVIDAA KB
+  if(!apiKey){
+    document.getElementById('typing-ind').classList.add('active');
+    setTimeout(()=>{
+      document.getElementById('typing-ind').classList.remove('active');
+      const reply=snakeAI(msg);
+      addMsg('AVIDAA',reply,'ai');
+    },350+Math.random()*250);
+    return;
+  }
+  // Key present → Anthropic API
+  document.getElementById('ai-badge').textContent='LIVE AI';
+  document.getElementById('ai-badge').style.color='var(--amber)';
+  document.getElementById('ai-badge').style.borderColor='var(--amber)';
+  aiHistory.push({role:'user',content:msg});
+  document.getElementById('codec-send-btn').disabled=true;
+  document.getElementById('ai-status').textContent='TRANSMITTING...';
+  document.getElementById('ai-status').style.color='var(--amber)';
+  document.getElementById('typing-ind').classList.add('active');
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':apiKey,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:600,system:AI_SYS,messages:aiHistory})
+    });
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'[SIGNAL LOST]';
+    aiHistory.push({role:'assistant',content:reply});
+    document.getElementById('typing-ind').classList.remove('active');
+    addMsg('AVIDAA',reply,'ai');
+    document.getElementById('ai-status').textContent='STANDBY';
+    document.getElementById('ai-status').style.color='var(--green)';
+  }catch(e){
+    document.getElementById('typing-ind').classList.remove('active');
+    addMsg('AVIDAA','[TRANSMISSION ERROR — CHECK API KEY]','ai');
+    document.getElementById('ai-status').textContent='ERROR';
+    document.getElementById('ai-status').style.color='var(--red)';
+  }
+  document.getElementById('codec-send-btn').disabled=false;
+}
+function clearCodecKey(){localStorage.removeItem('avidaa_anthropic_key');document.getElementById('api-key-input').value='';var b=document.getElementById('ai-badge');if(b){b.textContent='KB MODE';b.style.color='var(--green)';b.style.borderColor='var(--green)';};aiHistory=[];const msgs=document.getElementById('codec-msgs');msgs.innerHTML='<div class="msg ai"><div class="msg-label">CODEC AI</div><div class="msg-bubble">Key cleared. History purged. Codec channel reset.</div></div>';document.getElementById('ai-status').textContent='STANDBY';document.getElementById('ai-status').style.color='var(--green)'}
+function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function addMsg(label,text,type){const msgs=document.getElementById('codec-msgs');const div=document.createElement('div');div.className='msg '+type;const safe=escHtml(text).replace(/\n/g,'<br>');div.innerHTML=`<div class="msg-label">${label}</div><div class="msg-bubble">${safe}</div>`;msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight}
+
+// ── AVIDAA — JS Knowledge Base (no API key required) ───────────────────
+// switchMode removed — unified panel
+
+const SNAKE_KB = {
+  // Characters
+  'big boss':          'Big Boss (Jack / Naked Snake) — founder of MSF, Diamond Dogs, Outer Heaven. Trained by The Boss, co-founded the Patriots then split from Zero. Born 1935. Died 2014 at The Boss\'s grave after reconciling with Solid Snake. Appeared in: MG, MG2, MGS3, MPO, PW, GZ, MGSV, MGS4.',
+  'naked snake':       'Naked Snake is Big Boss\'s codename during MGS3: Snake Eater (1964). After killing The Boss he was awarded the Big Boss title — a title he carried with grief for the rest of his life.',
+  'solid snake':       'Solid Snake (David) — clone of Big Boss with the dominant genome. FOXHOUND operative who destroyed Metal Gear multiple times. Defeated Liquid at Shadow Moses, dismantled the Patriots via FOXALIVE in 2014. Chose to live after MGS4.',
+  'liquid snake':      'Liquid Snake (Eli) — Big Boss clone who believed he carried the inferior genome (proven false). Led the Shadow Moses revolt in 1998, died of FOXDIE. As a child he was Eli in MGSV. His persona was used by Ocelot via hypnotherapy in MGS2/4.',
+  'venom snake':       'Venom Snake — an MSF medic surgically rebuilt as Big Boss\'s phantom after Ground Zeroes. Given Big Boss\'s memories through hypnosis. Led Diamond Dogs in 1984. Learned the truth from the final cassette tape, chose to continue as the phantom. Killed by Solid Snake in MG1 (1987).',
+  'ocelot':            'Revolver Ocelot (Adamska) — son of The Boss, born on the Normandy battlefield 1944. Patriots co-founder. Triple agent who spent 50 years positioning to destroy the Patriots from inside. Used self-hypnosis to become Liquid Ocelot in MGS4. Died as himself on Outer Haven\'s deck.',
+  'the boss':          'The Boss (The Joy) — mother of special forces, founder of Cobra Unit, creator of CQC. Her 1964 defection was a sanctioned mission to recover the Philosophers\' Legacy. She willingly died as a traitor so the mission could succeed. Born 1922, died 1964. Arlington epitaph: In Memory of a Patriot Who Saved the World.',
+  'eva':               'EVA (Tatyana / Big Mama) — Chinese spy, Patriots co-founder, surrogate mother to the Snake clones. As Big Mama she led the Paradise Lost Army in MGS4 protecting Big Boss\'s body. Died in a fire in MGS4.',
+  'zero':              'Major Zero (David Oh) — British SAS officer, FOX commander, Patriots founder. His vision of managed safety corrupted into a global AI network. Kept alive by machines until Big Boss ended it in 2014.',
+  'miller':            'Kazuhira Miller — MSF co-founder, Diamond Dogs subcommander. Half-American half-Japanese. Lost both arms under XOF torture. In MGS1 he was killed by Liquid Snake before the mission and impersonated throughout.',
+  'quiet':             'Quiet — XOF sniper infected with the Wolbachia parasite, replacing her biology. She breathes and feeds through her skin. Cannot speak English without triggering a parasite outbreak. Defected to Diamond Dogs. Walked into the desert after speaking English to save Venom Snake\'s life.',
+  'skull face':        'Skull Face — XOF commander. His face was burned and rebuilt by American intelligence, his language and culture erased. Weaponized the vocal cord parasite to target English phonemes — destroying the transmission medium of American empire. Died under Sahelanthropus wreckage in MGSV.',
+  'paz':               'Paz Ortega Andrade (Pacifica Ocean) — Cipher double agent who infiltrated MSF. Threw herself from a helicopter in Ground Zeroes to prevent a second surgically-implanted bomb from detonating. Appears as a hallucination in MGSV.',
+  'raiden':            'Raiden (Jack) — MGS2 protagonist, former Liberian child soldier raised by Solidus. Was the Patriots\' S3 Plan test case. Rebuilt as a cyborg ninja in MGS4. Protagonist of Metal Gear Rising: Revengeance.',
+  'otacon':            'Otacon (Hal Emmerich) — Metal Gear REX\'s engineer, unaware of its nuclear purpose until MGS1. Co-founded Philanthropy with Snake. Guardian of Sunny. Survived the entire saga.',
+  'sniper wolf':       'Sniper Wolf — Iraqi-Kurdish FOXHOUND sharpshooter raised by Big Boss. PSG-1 specialist addicted to diazepam. Asked Snake to kill her in her final moments at Shadow Moses.',
+  'gray fox':          'Gray Fox (Frank Jaeger / Cyborg Ninja / Null) — the only FOX-rank operative. Snake\'s rival and ally across three decades. Destroyed REX\'s radome with his own body at Shadow Moses, dying in the process.',
+  'solidus':           'Solidus Snake (George Sears) — third Big Boss clone, 43rd US President (youngest ever at 28). Led Sons of Liberty to expose the Patriots. Raised Raiden as a child soldier. Died fighting Raiden on Federal Hall in MGS2.',
+  'psycho mantis':     'Psycho Mantis — psychokinetic FOXHOUND operative. Famous for reading the memory card and switching to controller port 2. In his final moments said he had never read a mind as pure as Meryl\'s. Strongly implied to be the grown form of the Third Child from MGSV.',
+  'third child':       'The Third Child (Tretij Rebenok) — young psychic boy in MGSV who reactivated Man on Fire and Sahelanthropus. Strongly implied to be the young form of Psycho Mantis.',
+  'vamp':              'Vamp — Romanian knife-fighter with nanomachine near-immortality. Close to Fortune in MGS2. Killed by Raiden in MGS4 after Naomi Hunter\'s treatment disabled his regeneration.',
+  'naomi':             'Naomi Hunter — FOXHOUND medical chief and geneticist. Created FOXDIE. Joined to take revenge on Snake for Frank Jaeger but redirected the virus. In MGS4 completed FOXALIVE while dying of cancer.',
+  'huey':              'Huey Emmerich — roboticist and father of Otacon. Designed Metal Gear ZEKE and Sahelanthropus. Murdered Strangelove by sealing her inside the Mammal Pod. Exiled from Diamond Dogs. Later committed suicide.',
+  'strangelove':       'Strangelove — British AI scientist whose grief over The Boss never resolved. Spent years reconstructing The Boss\'s decision-making architecture for Peace Walker. Married Huey, had Otacon. Murdered by Huey.',
+  'drebin':            'Drebin 893 — arms launderer and secret Patriot agent who aided Old Snake throughout MGS4 by removing ID locks from weapons. His global network operated under the SOP system.',
+  'sunny':             'Sunny Emmerich — daughter of Olga Gurlukovich, raised by Snake and Otacon. Solved the mathematical problem of FOXALIVE, ensuring global infrastructure survived the network collapse. Later worked at Solis space company.',
+  'fortune':           'Fortune (Helena Dolph Jackson) — Dead Cell leader whose entire family was systematically destroyed by the Patriots. Her projectile deflection was revealed to be a Patriot-controlled device in MGS2.',
+  'liquid ocelot':     'Liquid Ocelot — Ocelot using self-hypnosis to channel Liquid Snake\'s personality. Spent MGS4 building the PMC conglomerate and assaulting the Patriots\' network — all to destroy it from inside. Died as himself on Outer Haven\'s deck.',
+  'hot coldman':       'Hot Coldman — CIA Costa Rica station chief and Peace Walker architect. Believed nuclear deterrence only worked if demonstrated through actual use. Triggered Peace Walker\'s launch sequence while mortally wounded.',
+  'code talker':       'Code Talker — elderly Navajo parasite scientist coerced by Skull Face. Joined Diamond Dogs and helped develop the cure for the vocal cord parasite outbreak on Mother Base.',
+  'eli':               'Eli (Young Liquid) — child soldier with Big Boss clone genome extracted from Africa by Diamond Dogs in 1984. Led a revolt of child soldiers, stole Sahelanthropus. Grew up to become Liquid Snake.',
+  // Factions
+  'patriots':          'The Patriots — founded by Zero, Big Boss, Ocelot, Eva, Sigint, and Para-Medic after Portable Ops. Originally meant to carry The Boss\'s will forward. Zero\'s vision corrupted it into a global AI management system. Destroyed in 2014 when Snake uploaded FOXALIVE.',
+  'cipher':            'Cipher — Major Zero\'s Patriot faction managing Big Boss\'s legend and global intelligence operations. Skull Face worked within Cipher before going rogue with XOF.',
+  'msf':               'MSF (Militaires Sans Frontières) — Big Boss and Miller\'s mercenary nation built on an offshore platform. Destroyed by Skull Face\'s XOF in 1975. Its legacy became Diamond Dogs.',
+  'diamond dogs':      'Diamond Dogs — rebuilt from MSF ashes in 1984 under Venom Snake and Miller. Operated in Afghanistan and Africa against Skull Face\'s XOF. Based on Mother Base.',
+  'foxhound':          'Fox Hound — special forces unit commanded by Big Boss then reconstituted under new leadership. Stage of the Shadow Moses revolt in MGS1 led by Liquid Snake.',
+  'dead cell':         'Dead Cell — MGS2 anti-terrorist unit that went rogue under Fortune. Members: Fortune, Vamp, Fatman, Solidus Snake.',
+  'cobra unit':        'The Cobra Unit — founded by The Boss in 1942. Fought in WWII. Members: The Boss, The Pain, The Fear, The End, The Fury, The Sorrow. Each carried their war as a defining wound.',
+  'philanthropy':      'Philanthropy — anti-Metal Gear NGO co-founded by Solid Snake and Otacon after Shadow Moses. Worked to expose Metal Gear proliferation.',
+  'xof':               'XOF — Skull Face\'s shadow unit operating beneath Cipher. Destroyed MSF in 1975. Developed the vocal cord parasite weapon.',
+  // Games
+  'mgs1':              'Metal Gear Solid 1 (1998) — Shadow Moses, Alaska. Liquid Snake\'s revolt, Metal Gear REX, FOXDIE. First 3D MGS game. Snake rescues hostages, defeats REX and Liquid.',
+  'mgs2':              'Metal Gear Solid 2: Sons of Liberty (2007-2009) — Tanker then Big Shell. Raiden as protagonist. Arsenal Gear, GW AI, S3 Plan. The Patriots revealed as controlling global information.',
+  'mgs3':              'Metal Gear Solid 3: Snake Eater (1964) — Soviet jungle. Naked Snake vs Cobra Unit, Volgin, and ultimately The Boss. Origin of the entire saga.',
+  'mgs4':              'Metal Gear Solid 4: Guns of the Patriots (2014) — Old Snake in global conflict zones. SOP system, Liquid Ocelot, Beauty and Beast unit. FOXALIVE destroys the Patriots.',
+  'mgsv':              'Metal Gear Solid V: The Phantom Pain (1984) — Venom Snake rebuilding Diamond Dogs. Skull Face, vocal cord parasite, Quiet. The phantom identity reveal.',
+  'ground zeroes':     'Ground Zeroes (1975) — Camp Omega rescue of Chico and Paz. MSF destroyed simultaneously by XOF. Big Boss falls into a nine-year coma.',
+  'peace walker':      'Metal Gear Solid: Peace Walker (1974) — Big Boss in Costa Rica against CIA operation. Peace Walker AI modeled on The Boss. Big Boss refuses nuclear counterlaunch.',
+  'revengeance':       'Metal Gear Rising: Revengeance — Raiden vs Winds of Destruction and Senator Armstrong. Jetstream Sam, Monsoon\'s nihilism, Armstrong\'s nanomachines. Raiden kills Armstrong with Sam\'s sword.',
+  // Weapons and tech
+  'metal gear':        'Metal Gear — a bipedal nuclear-armed battle tank able to launch warheads from any terrain. First built by Sokolov for Volgin (Shagohod). Subsequent models: TX-55 (Outer Heaven), D (Zanzibar), REX (Shadow Moses), RAY (anti-Metal Gear), Sahelanthropus (MGSV).',
+  'foxdie':            'FOXDIE — a retrovirus engineered to kill targets with a specific genetic profile. Deployed by Naomi Hunter. Killed the DARPA Chief, Baker, Liquid, and eventually threatened to mutate into a pandemic strain.',
+  'foxalive':          'FOXALIVE — computer worm developed by Naomi Hunter and Sunny Emmerich. Destroyed the Patriots\' AI control network while preserving global infrastructure. Uploaded by Snake in MGS4.',
+  'les enfants':       'Les Enfants Terribles — the cloning project producing Solid, Liquid, and Solidus Snake from Big Boss\'s genome. Conducted by Para-Medic (Dr. Clark).',
+  'sop':               'SOP (Sons of the Patriots) — nanomachine network that authorized and controlled all PMC soldiers globally by 2014. Collapsed when Snake uploaded FOXALIVE.',
+  'parasite':          'Vocal cord parasite — Wolbachia-based organism weaponized by Skull Face to target specific language phonemes. The English strain was intended to destroy American cultural empire.',
+  'cqc':               'CQC (Close Quarters Combat) — combat philosophy co-developed by The Boss and Naked Snake. Treats combat as a communicative act between bodies, not merely mechanical force exchange.',
+  'philosophers legacy': 'The Philosophers\' Legacy — a post-WWII financial reserve assembled by American, Soviet, and Chinese power structures. Over $100 billion in mid-century value. The prize that everyone fought over until Big Boss recovered it via Eva\'s microfilm (which turned out to be fake).',
+  's3 plan':           'S3 Plan (Selection for Societal Sanity) — the Patriots\' test conducted via the Big Shell operation. Goal: determine if the Solid Snake archetype could be reproduced through controlled VR experience. Raiden was the test subject.',
+  // Themes
+  'genes memes':       'Genes, Memes, Scenes, Sense, Sons — the five recurring themes of the saga. Genes: inherited identity (cloning). Memes: transmitted cultural information (Patriots\' control). Scenes: the context we are born into. Sense: finding purpose. Sons: the parent-child burden.',
+  'theme':             'The saga\'s core questions: What do you owe the person who made you? What is the self when constructed by others? What is the cost of controlled safety? What does loyalty mean when what you are loyal to is wrong?',
+  'ending':            'MGS4 ending: Big Boss returns, ends Zero, reconciles with Solid Snake at The Boss\'s grave, dies from FOXDIE. Solid Snake chooses to live — "Whatever time I have left is mine." The world is free for the first time in half a century.',
+};
+
+function snakeAI(msg){
+  const q = msg.toLowerCase().trim();
+  // Direct key match
+  for(const [key, val] of Object.entries(SNAKE_KB)){
+    if(q.includes(key)) return val;
+  }
+  // Partial match
+  const words = q.split(/\s+/);
+  for(const [key, val] of Object.entries(SNAKE_KB)){
+    const keyWords = key.split(/\s+/);
+    if(keyWords.every(kw => q.includes(kw))) return val;
+  }
+  // Fallback hints
+  if(q.includes('who is') || q.includes('what is') || q.includes('tell me about')){
+    const topic = q.replace(/who is|what is|tell me about|the|a |an /g,'').trim();
+    const close = Object.keys(SNAKE_KB).find(k=>k.includes(topic)||topic.includes(k));
+    if(close) return SNAKE_KB[close];
+  }
+  return 'Intel not found in local archive. Try: character names (Big Boss, Quiet, Ocelot), factions (Patriots, MSF, XOF), games (MGS1-4, MGSV), weapons (Metal Gear, FOXDIE), or themes (Les Enfants Terribles, S3 Plan, CQC). — Or switch to LIVE AI for deeper queries.';
+}
+
+// sendSnake + addSnakeMsg merged into sendCodec
+
